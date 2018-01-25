@@ -25,6 +25,107 @@ describe('constructor', function() {
 
 });
 
+describe('keep alive', function() {
+
+  beforeEach(function() {
+    AWS.config.update({
+      region: 'us-east-1'
+    });
+
+    const host = new Host();
+    const connector = new Connector(host, {});
+
+    sinon.stub(connector, 'getAWSCredentials').resolves({
+      secretAccessKey: 'abc',
+      accessKeyId: 'abc'
+    });
+
+    this.signRequest = sinon.stub(connector, 'signRequest');
+
+    this.connector = connector;
+  });
+
+  it('keeps alive by default', function (done) {
+    const fakeReq = new EventEmitter();
+
+    fakeReq.headers = {};
+    fakeReq.setNoDelay = sinon.stub();
+    fakeReq.setSocketKeepAlive = sinon.stub();
+    fakeReq.setEncoding = sinon.stub();
+    
+    sinon.stub(this.connector.httpClient.client, 'handleRequest')
+      .callsFake(function(request, httpOptions, callback) {
+        callback(fakeReq);
+      })
+      .returns(fakeReq);
+
+    const cancel = this.connector.request({}, () => {});
+
+    // since getCredentials is async, we have to let the event loop tick
+    setTimeout(() => {
+      try {
+        expect(fakeReq.setSocketKeepAlive.called).to.be.true;
+
+        done();
+      } catch (e) {
+        done(e);
+      }
+    });
+  });
+
+});
+
+
+describe('keep alive false', function() {
+
+  beforeEach(function() {
+    AWS.config.update({
+      region: 'us-east-1'
+    });
+
+    const host = new Host();
+    const connector = new Connector(host, { keepAlive: false });
+
+    sinon.stub(connector, 'getAWSCredentials').resolves({
+      secretAccessKey: 'abc',
+      accessKeyId: 'abc'
+    });
+
+    this.signRequest = sinon.stub(connector, 'signRequest');
+
+    this.connector = connector;
+  });
+
+  it('keeps alive off', function (done) {
+    const fakeReq = new EventEmitter();
+
+    fakeReq.headers = {};
+    fakeReq.setNoDelay = sinon.stub();
+    fakeReq.setSocketKeepAlive = sinon.stub();
+    fakeReq.setEncoding = sinon.stub();
+    
+    sinon.stub(this.connector.httpClient.client, 'handleRequest')
+      .callsFake(function(request, httpOptions, callback) {
+        callback(fakeReq);
+      })
+      .returns(fakeReq);
+
+    const cancel = this.connector.request({}, () => {});
+
+    // since getCredentials is async, we have to let the event loop tick
+    setTimeout(() => {
+      try {
+        expect(fakeReq.setSocketKeepAlive.called).to.be.false;
+
+        done();
+      } catch (e) {
+        done(e);
+      }
+    });
+  });
+
+});
+
 describe('request', function () {
 
   beforeEach(function() {
@@ -81,7 +182,7 @@ describe('request', function () {
     fakeReq.setSocketKeepAlive = sinon.stub();
 
     sinon.stub(this.connector.httpClient, 'handleRequest')
-      .callsFake(function(request, options, callback) {
+      .callsFake(function(request, httpOptions, config, callback) {
         callback(error);
         return fakeReq;
       });

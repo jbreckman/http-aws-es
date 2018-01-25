@@ -26,6 +26,7 @@ class HttpAmazonESConnector extends HttpConnector {
     if (protocol) endpoint.protocol = protocol.replace(/:?$/, ":");
     if (port) endpoint.port = port;
 
+    this.config = Object.assign({ keepAlive: true }, config || {});
     this.awsConfig = config.awsConfig || AWS.config;
     this.endpoint = endpoint;
     this.httpOptions = config.httpOptions || this.awsConfig.httpOptions;
@@ -62,7 +63,7 @@ class HttpAmazonESConnector extends HttpConnector {
         const request = this.createRequest(params, reqParams);
         // Sign the request (Sigv4)
         this.signRequest(request, creds);
-        req = this.httpClient.handleRequest(request, this.httpOptions, done);
+        req = this.httpClient.handleRequest(request, this.httpOptions, this.config, done);
       })
       .catch(done);
 

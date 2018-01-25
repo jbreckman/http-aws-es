@@ -5,7 +5,7 @@ class XHRClient {
     this.client = new AWS.XHRClient();    
   }
 
-  handleRequest(request, httpOptions, cb) {
+  handleRequest(request, httpOptions, config, cb) {
     let xhr, response, body, status, headers;
     delete request.headers['presigned-expires'];
 

@@ -6,7 +6,7 @@ class NodeHttpClient {
     this.client = new AWS.NodeHttpClient();
   }
 
-  handleRequest(request, httpOptions, cb) {
+  handleRequest(request, httpOptions, config, cb) {
     let req, response, body, status, headers;
 
     // general clean-up procedure to run after the request
@@ -41,8 +41,12 @@ class NodeHttpClient {
       response.on('end', cleanUp);
     }, cleanUp);
 
+
     req.setNoDelay(true);
-    req.setSocketKeepAlive(true);
+
+    if (config.keepAlive) {
+      req.setSocketKeepAlive(true);
+    }
 
     return req;
   }

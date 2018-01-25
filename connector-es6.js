@@ -30,6 +30,7 @@ let zlib = require('zlib');
 class HttpAmazonESConnector extends HttpConnector {
   constructor(host, config) {
     super(host, config);
+    this.configCopy = Object.assign( { keepAlive: true }, config || {});
     this.endpoint = new AWS.Endpoint(host.host);
     let c = config.amazonES;
     if (c.credentials) {
@@ -111,7 +112,13 @@ class HttpAmazonESConnector extends HttpConnector {
     req.on('error', cleanUp);
 
     req.setNoDelay(true);
-    req.setSocketKeepAlive(true);
+    if (this.configCopy.keepAlive) {
+      req.setSocketKeepAlive(true);
+    }
+    else {
+      req.setSocketKeepAlive(false);
+      req.shouldKeepAlive = false;
+    }
 
     return function () {
       req.abort();

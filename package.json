@@ -16,7 +16,7 @@
     "extension",
     "sign"
   ],
-  "main": "connector.js",
+  "main": "connector-es6.js",
   "dependencies": {
     "aws-sdk": "^2.2.19"
   },
@@ -26,7 +26,6 @@
     "eslint": "^1.7.1"
   },
   "scripts": {
-    "prepublish": "babel ./connector-es6.js > ./connector.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Geoff Wagstaff <geoff@gosquared.com>",
